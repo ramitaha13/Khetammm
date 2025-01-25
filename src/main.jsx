@@ -17,6 +17,12 @@ import Addemail from "../src/components/addemail.jsx";
 import Writedoce from "../src/components/writedoce.jsx";
 import Address from "../src/components/address.jsx";
 import Addaddress from "../src/components/addaddress.jsx";
+import Pastdates from "../src/components/pastdates.jsx";
+import Tasks from "../src/components/Tasks.jsx";
+import AddTasks from "../src/components/addTasks.jsx";
+import Settings from "../src/components/settings.jsx";
+import Websites from "../src/components/websites.jsx";
+import Addwebsite from "../src/components/addwebsite.jsx";
 
 const router = createBrowserRouter([
   {
@@ -82,6 +88,30 @@ const router = createBrowserRouter([
   {
     path: "/addaddress",
     element: <Addaddress />,
+  },
+  {
+    path: "/pastdates",
+    element: <Pastdates />,
+  },
+  {
+    path: "/Tasks",
+    element: <Tasks />,
+  },
+  {
+    path: "/addTasks",
+    element: <AddTasks />,
+  },
+  {
+    path: "/settings",
+    element: <Settings />,
+  },
+  {
+    path: "/websites",
+    element: <Websites />,
+  },
+  {
+    path: "/addwebsite",
+    element: <Addwebsite />,
   },
 ]);
 
