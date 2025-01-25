@@ -5,6 +5,8 @@ import "./index.css";
 import Home from "../src/components/home.jsx";
 import Login from "../src/components/login.jsx";
 import Mainpage from "../src/components/mainpage.jsx";
+import Notes from "../src/components/notes.jsx";
+import Addnote from "../src/components/addnote.jsx";
 
 const router = createBrowserRouter([
   {
@@ -22,6 +24,14 @@ const router = createBrowserRouter([
   {
     path: "/mainpage",
     element: <Mainpage />,
+  },
+  {
+    path: "/notes",
+    element: <Notes />,
+  },
+  {
+    path: "/addnote",
+    element: <Addnote />,
   },
 ]);
 
