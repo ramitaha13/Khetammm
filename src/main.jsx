@@ -12,6 +12,11 @@ import Adddate from "../src/components/adddate.jsx";
 import Nowdate from "../src/components/nowdate.jsx";
 import Numbers from "../src/components/numbers.jsx";
 import Addnumbers from "../src/components/addnumbers.jsx";
+import Emailimportant from "../src/components/emailimportant.jsx";
+import Addemail from "../src/components/addemail.jsx";
+import Writedoce from "../src/components/writedoce.jsx";
+import Address from "../src/components/address.jsx";
+import Addaddress from "../src/components/addaddress.jsx";
 
 const router = createBrowserRouter([
   {
@@ -57,6 +62,26 @@ const router = createBrowserRouter([
   {
     path: "/addnumbers",
     element: <Addnumbers />,
+  },
+  {
+    path: "/emailimportant",
+    element: <Emailimportant />,
+  },
+  {
+    path: "/addemail",
+    element: <Addemail />,
+  },
+  {
+    path: "/writedoce",
+    element: <Writedoce />,
+  },
+  {
+    path: "/address",
+    element: <Address />,
+  },
+  {
+    path: "/addaddress",
+    element: <Addaddress />,
   },
 ]);
 
