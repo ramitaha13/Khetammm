@@ -30,6 +30,7 @@ import gmail1 from "/src/assets/4.JPG";
 import outlook1 from "/src/assets/5.JPG";
 import whatsapp1 from "/src/assets/6.JPG";
 import maps1 from "/src/assets/7.JPG";
+import notificationSound from "/src/assets/8.mp3";
 
 const LanguageContext = createContext();
 
@@ -119,8 +120,21 @@ const NotificationBell = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [previousCount, setPreviousCount] = useState(0);
   const dropdownRef = useRef(null);
-  const audioRef = useRef(new Audio("/src/assets/8.mp3"));
+  const audioRef = useRef(null);
   const { language, translations } = useContext(LanguageContext);
+
+  useEffect(() => {
+    audioRef.current = new Audio(notificationSound);
+  }, []);
+
+  const playNotificationSound = () => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch((error) => {
+        console.error("Error playing notification sound:", error);
+      });
+    }
+  };
 
   useEffect(() => {
     const db = getDatabase();
@@ -145,11 +159,8 @@ const NotificationBell = () => {
           (n) => !n.read
         ).length;
 
-        // Play sound if unread count increases
         if (newUnreadCount > previousCount) {
-          audioRef.current.play().catch((error) => {
-            console.log("Audio playback failed:", error);
-          });
+          playNotificationSound();
         }
 
         setUnreadCount(newUnreadCount);
@@ -643,7 +654,7 @@ const MainPage = () => {
 export const useMainContext = () => {
   const context = useContext(LanguageContext);
   if (!context) {
-    throw new Error("useMainContext must be used within aa LanguageProvider");
+    throw new Error("useMainContext must be used within a LanguageProvider");
   }
   return context;
 };
