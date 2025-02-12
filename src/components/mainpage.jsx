@@ -643,7 +643,7 @@ const MainPage = () => {
 export const useMainContext = () => {
   const context = useContext(LanguageContext);
   if (!context) {
-    throw new Error("useMainContext must be used within a LanguageProvider");
+    throw new Error("useMainContext must be used within aa LanguageProvider");
   }
   return context;
 };
