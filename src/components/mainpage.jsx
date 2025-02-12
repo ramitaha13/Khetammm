@@ -117,7 +117,9 @@ const NotificationBell = () => {
   const [notifications, setNotifications] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [previousCount, setPreviousCount] = useState(0);
   const dropdownRef = useRef(null);
+  const audioRef = useRef(new Audio("/src/assets/8.mp3"));
   const { language, translations } = useContext(LanguageContext);
 
   useEffect(() => {
@@ -139,10 +141,23 @@ const NotificationBell = () => {
         );
 
         setNotifications(sortedNotifications);
-        setUnreadCount(sortedNotifications.filter((n) => !n.read).length);
+        const newUnreadCount = sortedNotifications.filter(
+          (n) => !n.read
+        ).length;
+
+        // Play sound if unread count increases
+        if (newUnreadCount > previousCount) {
+          audioRef.current.play().catch((error) => {
+            console.log("Audio playback failed:", error);
+          });
+        }
+
+        setUnreadCount(newUnreadCount);
+        setPreviousCount(newUnreadCount);
       } else {
         setNotifications([]);
         setUnreadCount(0);
+        setPreviousCount(0);
       }
     });
 
@@ -158,7 +173,7 @@ const NotificationBell = () => {
       unsubscribe();
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [previousCount]);
 
   const markAsRead = async (notificationId) => {
     try {
