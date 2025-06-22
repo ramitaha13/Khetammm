@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { getDatabase, ref, onValue, remove, get } from "firebase/database";
 import { useNavigate } from "react-router-dom";
-import { LogOut, ArrowRight, Trash2 } from "lucide-react";
+import { LogOut, ArrowLeft, Trash2 } from "lucide-react";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -29,8 +29,8 @@ const Header = () => {
             onClick={() => navigate("/mainpage")}
             className="flex items-center text-blue-900 hover:text-blue-700 transition-colors duration-200"
           >
-            <ArrowRight className="h-6 w-6" />
             <span className="mr-2">رجوع</span>
+            <ArrowLeft className="h-6 w-6" />
           </button>
         </div>
       </div>
