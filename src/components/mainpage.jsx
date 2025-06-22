@@ -599,7 +599,7 @@ const MainContent = () => {
               {translations.husband}
             </p>
             <a
-              href="tel:0543272208"
+              href="tel:0537188222"
               className="text-white text-xl md:text-2xl hover:text-amber-400"
             >
               0543272208
