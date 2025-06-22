@@ -32,7 +32,7 @@ const Header = () => {
           </button>
 
           <h1 className="text-xl md:text-2xl font-bold text-blue-900">
-            مذكره السلطة المحلية كابول
+            מחולל תוכן דו-לשוני | مولد المحتوى ثنائي اللغة
           </h1>
 
           <button
@@ -50,7 +50,8 @@ const Header = () => {
 
 const WriteDocForm = () => {
   const [description, setDescription] = useState("");
-  const [generatedContent, setGeneratedContent] = useState("");
+  const [generatedContentArabic, setGeneratedContentArabic] = useState("");
+  const [generatedContentHebrew, setGeneratedContentHebrew] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState(null);
 
@@ -61,7 +62,7 @@ const WriteDocForm = () => {
 
   const generateContent = async () => {
     if (!description.trim()) {
-      setError("يرجى إدخال وصف للمستند");
+      setError("يرجى إدخال النص المطلوب / אנא הזן את הטקסט הרצוי");
       return;
     }
 
@@ -69,75 +70,114 @@ const WriteDocForm = () => {
     setError(null);
 
     try {
-      const prompt = `أكتب مستنداً رسمياً باللغة العربية بناءً على الوصف التالي: "${description}"
+      // Generate Arabic response
+      const arabicPrompt = `${description}
 
-يجب أن يكون المستند:
-- مكتوباً بصيغة رسمية ومناسبة للسلطة المحلية
-- منظماً ومنسقاً بشكل جيد
-- يحتوي على عناصر المستند الرسمي (التاريخ، المقدمة، المحتوى، الخاتمة)
-- مكتوباً بلغة عربية فصيحة ومفهومة
-- يتراوح طوله بين 200-500 كلمة حسب طبيعة الموضوع
+أجب على هذا الطلب باللغة العربية بشكل واضح ومفصل. اكتب الإجابة مباشرة دون أي تفسيرات إضافية.`;
 
-اكتب المستند مباشرة دون أي تفسيرات إضافية.`;
+      // Generate Hebrew response
+      const hebrewPrompt = `${description}
 
-      const payload = {
-        contents: [
-          {
-            parts: [
-              {
-                text: prompt,
-              },
-            ],
-          },
-        ],
-        generationConfig: {
-          temperature: 0.7,
-          topK: 32,
-          topP: 0.95,
-          maxOutputTokens: 1024,
-        },
-      };
+ענה על הבקשה הזו בעברית בצורה ברורה ומפורטת. כתוב את התשובה ישירות ללא הסברים נוספים.`;
 
-      const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+      // Generate Arabic content
+      const arabicResponse = await fetch(`${API_URL}?key=${API_KEY}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: arabicPrompt,
+                },
+              ],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.7,
+            topK: 32,
+            topP: 0.95,
+            maxOutputTokens: 1024,
+          },
+        }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (!arabicResponse.ok) {
+        const errorData = await arabicResponse.json();
         throw new Error(
-          errorData.error?.message || `API error: ${response.status}`
+          errorData.error?.message || `API error: ${arabicResponse.status}`
         );
       }
 
-      const data = await response.json();
+      const arabicData = await arabicResponse.json();
 
-      if (data.candidates && data.candidates[0]?.content) {
-        const responseText = data.candidates[0].content.parts[0].text;
-        setGeneratedContent(responseText);
-      } else if (data.promptFeedback && data.promptFeedback.blockReason) {
-        setError(`تم حجب الاستجابة: ${data.promptFeedback.blockReason}`);
+      // Generate Hebrew content
+      const hebrewResponse = await fetch(`${API_URL}?key=${API_KEY}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: hebrewPrompt,
+                },
+              ],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.7,
+            topK: 32,
+            topP: 0.95,
+            maxOutputTokens: 1024,
+          },
+        }),
+      });
+
+      if (!hebrewResponse.ok) {
+        const errorData = await hebrewResponse.json();
+        throw new Error(
+          errorData.error?.message || `API error: ${hebrewResponse.status}`
+        );
+      }
+
+      const hebrewData = await hebrewResponse.json();
+
+      // Process Arabic response
+      if (arabicData.candidates && arabicData.candidates[0]?.content) {
+        const arabicText = arabicData.candidates[0].content.parts[0].text;
+        setGeneratedContentArabic(arabicText);
       } else {
-        setError("تم تلقي استجابة فارغة أو غير صالحة من الخدمة");
+        setError("لم يتم تلقي استجابة صالحة باللغة العربية");
+      }
+
+      // Process Hebrew response
+      if (hebrewData.candidates && hebrewData.candidates[0]?.content) {
+        const hebrewText = hebrewData.candidates[0].content.parts[0].text;
+        setGeneratedContentHebrew(hebrewText);
+      } else {
+        setError("לא התקבלה תגובה תקינה בעברית");
       }
     } catch (err) {
       console.error("Error generating content:", err);
-      setError(`خطأ في توليد المحتوى: ${err.message}`);
+      setError(`خطأ في توليد المحتوى / שגיאה ביצירת התוכן: ${err.message}`);
     } finally {
       setIsGenerating(false);
     }
   };
 
   const handleDownload = async () => {
-    if (!generatedContent.trim()) {
-      setError("لا يوجد محتوى لتحميله");
+    if (!generatedContentArabic.trim() && !generatedContentHebrew.trim()) {
+      setError("لا يوجد محتوى لتحميله / אין תוכן להורדה");
       return;
     }
 
-    // Create new document
+    // Create new document with both languages
     const doc = new Document({
       sections: [
         {
@@ -151,17 +191,62 @@ const WriteDocForm = () => {
               },
             },
           },
-          children: generatedContent.split("\n").map(
-            (line) =>
-              new Paragraph({
-                text: line,
-                bidirectional: true,
-                alignment: "right",
-                spacing: {
-                  after: 200,
+          children: [
+            // Arabic content
+            new Paragraph({
+              text: "النسخة العربية:",
+              bidirectional: true,
+              alignment: "right",
+              spacing: { after: 400 },
+              style: {
+                run: {
+                  bold: true,
+                  size: 28,
                 },
-              })
-          ),
+              },
+            }),
+            ...generatedContentArabic.split("\n").map(
+              (line) =>
+                new Paragraph({
+                  text: line,
+                  bidirectional: true,
+                  alignment: "right",
+                  spacing: {
+                    after: 200,
+                  },
+                })
+            ),
+            // Separator
+            new Paragraph({
+              text: "─────────────────────────────",
+              alignment: "center",
+              spacing: { before: 600, after: 600 },
+            }),
+            // Hebrew content
+            new Paragraph({
+              text: "הגרסה העברית:",
+              bidirectional: true,
+              alignment: "right",
+              spacing: { after: 400 },
+              style: {
+                run: {
+                  bold: true,
+                  size: 28,
+                },
+              },
+            }),
+            ...generatedContentHebrew.split("\n").map(
+              (line) =>
+                new Paragraph({
+                  text: line,
+                  bidirectional: true,
+                  alignment: "right",
+                  spacing: {
+                    after: 200,
+                  },
+                })
+            ),
+          ],
         },
       ],
     });
@@ -169,23 +254,24 @@ const WriteDocForm = () => {
     // Generate and download document
     try {
       const buffer = await Packer.toBlob(doc);
-      saveAs(buffer, "document.docx");
+      saveAs(buffer, "bilingual-content.docx");
     } catch (error) {
       console.error("Error creating document:", error);
-      setError("خطأ في إنشاء المستند");
+      setError("خطأ في إنشاء المستند / שגיאה ביצירת המסמך");
     }
   };
 
   const clearContent = () => {
-    setGeneratedContent("");
+    setGeneratedContentArabic("");
+    setGeneratedContentHebrew("");
     setDescription("");
     setError(null);
   };
 
   return (
-    <div className="bg-white rounded-xl p-4 md:p-8 max-w-4xl mx-auto">
-      <h2 className="text-xl md:text-2xl font-bold text-blue-900 mb-6 text-right">
-        مولد المستندات بالذكاء الاصطناعي
+    <div className="bg-white rounded-xl p-4 md:p-8 max-w-6xl mx-auto">
+      <h2 className="text-xl md:text-2xl font-bold text-blue-900 mb-6 text-center">
+        מחולל תוכן דו-לשוני | مولد المحتوى ثنائي اللغة
       </h2>
 
       <div className="space-y-6">
@@ -193,28 +279,27 @@ const WriteDocForm = () => {
         <div>
           <label
             htmlFor="description"
-            className="block text-right text-gray-700 text-sm font-bold mb-2"
+            className="block text-center text-gray-700 text-sm font-bold mb-2"
           >
-            وصف المستند المطلوب
+            הזן בקשה בכל שפה | أدخل طلبك بأي لغة
           </label>
           <textarea
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
-            dir="rtl"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-right"
-            placeholder="مثال: كتابة خطاب رسمي لطلب إجازة، أو مذكرة إدارية حول تنظيم الاجتماعات، أو تقرير عن نشاط معين..."
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
+            placeholder="مثال: اكتب قصة قصيرة عن الصداقة | דוגמה: כתוב סיפור קצר על חברות | Example: Write a short story about friendship"
             required
           />
         </div>
 
         {/* Generate Button */}
-        <div className="flex justify-end">
+        <div className="flex justify-center">
           <button
             onClick={generateContent}
             disabled={isGenerating || !description.trim()}
-            className={`flex items-center px-6 py-2 rounded-lg transition-colors
+            className={`flex items-center px-8 py-3 rounded-lg transition-colors text-lg
               ${
                 isGenerating || !description.trim()
                   ? "bg-gray-400 cursor-not-allowed"
@@ -224,12 +309,12 @@ const WriteDocForm = () => {
             {isGenerating ? (
               <>
                 <RefreshCw className="h-5 w-5 animate-spin ml-2" />
-                <span>جاري التوليد...</span>
+                <span>יוצר תוכן... | جاري التوليد...</span>
               </>
             ) : (
               <>
                 <Zap className="h-5 w-5 ml-2" />
-                <span>توليد المستند</span>
+                <span>צור תוכן | توليد المحتوى</span>
               </>
             )}
           </button>
@@ -240,46 +325,78 @@ const WriteDocForm = () => {
           <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-start text-red-700">
               <AlertCircle className="h-5 w-5 ml-2 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-right flex-1">{error}</p>
+              <p className="text-sm text-center flex-1">{error}</p>
             </div>
           </div>
         )}
 
         {/* Generated Content */}
-        {generatedContent && (
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <button
-                onClick={clearContent}
-                className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
-              >
-                مسح المحتوى
-              </button>
-              <label className="block text-right text-gray-700 text-sm font-bold">
-                المستند المولد
-              </label>
-            </div>
-            <textarea
-              value={generatedContent}
-              onChange={(e) => setGeneratedContent(e.target.value)}
-              rows={15}
-              dir="rtl"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-right bg-gray-50"
-            />
-            <p className="text-xs text-gray-500 mt-2 text-right">
-              يمكنك تعديل النص المولد حسب احتياجاتك قبل التحميل
-            </p>
+        {(generatedContentArabic || generatedContentHebrew) && (
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Arabic Content */}
+            {generatedContentArabic && (
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <button
+                    onClick={() => setGeneratedContentArabic("")}
+                    className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                  >
+                    مسح
+                  </button>
+                  <label className="block text-right text-gray-700 text-sm font-bold">
+                    النسخة العربية
+                  </label>
+                </div>
+                <textarea
+                  value={generatedContentArabic}
+                  onChange={(e) => setGeneratedContentArabic(e.target.value)}
+                  rows={15}
+                  dir="rtl"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-right bg-gray-50"
+                />
+              </div>
+            )}
+
+            {/* Hebrew Content */}
+            {generatedContentHebrew && (
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-right text-gray-700 text-sm font-bold">
+                    הגרסה העברית
+                  </label>
+                  <button
+                    onClick={() => setGeneratedContentHebrew("")}
+                    className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                  >
+                    נקה
+                  </button>
+                </div>
+                <textarea
+                  value={generatedContentHebrew}
+                  onChange={(e) => setGeneratedContentHebrew(e.target.value)}
+                  rows={15}
+                  dir="rtl"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-right bg-gray-50"
+                />
+              </div>
+            )}
           </div>
         )}
 
-        {/* Download Button */}
-        {generatedContent && (
-          <div className="flex justify-end space-x-4">
+        {/* Action Buttons */}
+        {(generatedContentArabic || generatedContentHebrew) && (
+          <div className="flex justify-center space-x-4">
+            <button
+              onClick={clearContent}
+              className="flex items-center bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+            >
+              <span className="ml-2">נקה הכل | مسح الكل</span>
+            </button>
             <button
               onClick={handleDownload}
               className="flex items-center bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
             >
-              <span className="ml-2">تحميل كملف Word</span>
+              <span className="ml-2">הורד קובץ | تحميل ملف</span>
               <Download className="h-5 w-5" />
             </button>
           </div>
@@ -287,15 +404,25 @@ const WriteDocForm = () => {
 
         {/* Instructions */}
         <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <h3 className="text-sm font-bold text-blue-900 mb-2 text-right">
-            كيفية الاستخدام:
+          <h3 className="text-sm font-bold text-blue-900 mb-2 text-center">
+            אופן השימוש | كيفية الاستخدام
           </h3>
-          <ul className="text-sm text-blue-800 space-y-1 text-right">
-            <li>• اكتب وصفاً واضحاً للمستند الذي تريد إنشاؤه</li>
-            <li>• اضغط على "توليد المستند" لتوليد المحتوى بالذكاء الاصطناعي</li>
-            <li>• راجع المحتوى المولد وعدّله إذا لزم الأمر</li>
-            <li>• اضغط على "تحميل كملف Word" لحفظ المستند</li>
-          </ul>
+          <div className="grid md:grid-cols-2 gap-4 text-sm text-blue-800">
+            <ul className="space-y-1 text-right">
+              <li>• اكتب طلبك بأي لغة تريد</li>
+              <li>• اضغط على "توليد المحتوى"</li>
+              <li>• ستحصل على إجابتين: بالعربية والعبرية</li>
+              <li>• يمكنك تعديل النصوص قبل التحميل</li>
+              <li>• اضغط "تحميل ملف" لحفظ المحتوى</li>
+            </ul>
+            <ul className="space-y-1 text-right">
+              <li>• כתוב את הבקשה שלך בכל שפה</li>
+              <li>• לחץ על "צור תוכן"</li>
+              <li>• תקבל שתי תשובות: בערבית ובעברית</li>
+              <li>• ניתן לערוך את הטקסטים לפני ההורדה</li>
+              <li>• לחץ "הורד קובץ" לשמירת התוכן</li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
