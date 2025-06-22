@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { LogIn, User, Eye, EyeOff, ChevronRight, Check } from "lucide-react";
+import {
+  LogIn,
+  User,
+  Eye,
+  EyeOff,
+  ChevronRight,
+  Check,
+  ChevronLeft,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getDatabase, ref, get, onValue } from "firebase/database";
 import { app } from "../firebaseConfig";
@@ -117,7 +125,7 @@ const LoginPage = () => {
               className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors duration-300"
             >
               <span>العودة للرئيسية</span>
-              <ChevronRight className="w-5 h-5" />
+              <ChevronLeft className="w-5 h-5" />
             </button>
           </div>
         </div>
