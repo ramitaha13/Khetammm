@@ -602,7 +602,7 @@ const MainContent = () => {
               href="tel:0537188222"
               className="text-white text-xl md:text-2xl hover:text-amber-400"
             >
-              0543272208
+              0537188222
             </a>
           </div>
           <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-6 text-center hover:bg-white/20 transition-all">
